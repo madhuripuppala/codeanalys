@@ -6,7 +6,7 @@ const path = require('path');
 const { rmSync } = require('fs');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // --- API Keys are now loaded from .env file ---
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
