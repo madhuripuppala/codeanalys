@@ -4,22 +4,21 @@ import React, { useState } from 'react';
 function App() {
     // State variables for managing input and results
     const [code, setCode] = useState('');
-    const [language, setLanguage] = useState('cpp');
+    const [language, setLanguage] = useState('javascript');
     const [loading, setLoading] = useState(false);
-    const [results, setResults] = useState(null); // Stores the analysis results (complexity, optimizations, identified problem)
-    const [alternativeImplementations, setAlternativeImplementations] = useState([]); // Initialize as empty array to show section
-    const [youtubeVideos, setYoutubeVideos] = useState([]); // Initialize as empty array to show section
-    const [error, setError] = useState(null); // Stores any error messages
+    const [results, setResults] = useState(null);
+    const [alternativeImplementations, setAlternativeImplementations] = useState([]);
+    const [youtubeVideos, setYoutubeVideos] = useState([]);
+    const [error, setError] = useState(null);
+    const [showResults, setShowResults] = useState(false);
 
-    // Function to handle code analysis when the button is clicked
     const handleAnalyzeCode = async () => {
-        // Basic validation for code input
         if (!code.trim()) {
             showMessageBox('Please enter some code to analyze.');
             return;
         }
 
-        // Reset previous results and errors, show loading indicator
+        setShowResults(true);
         setResults(null);
         setAlternativeImplementations([]);
         setYoutubeVideos([]);
@@ -27,7 +26,6 @@ function App() {
         setLoading(true);
 
         try {
-            // Make a POST request to the backend server
             const response = await fetch('http://localhost:3000/analyze-code', {
                 method: 'POST',
                 headers: {
@@ -62,7 +60,6 @@ function App() {
         }
     };
 
-    // Custom message box function (instead of alert)
     const showMessageBox = (message) => {
         const messageBox = document.createElement('div');
         messageBox.style.cssText = `
@@ -99,6 +96,8 @@ function App() {
         };
     };
 
+    const placeholderText = `// Enter your ${language} code here...`;
+
 
     return (
         <div className="app-container">
@@ -109,7 +108,7 @@ function App() {
 
                 body {
                     font-family: 'Inter', sans-serif;
-                    background-color: #eef2f9; /* Very light navy blue */
+                    background-color: #f9fafb; /* Light gray background */
                     color: #1f2937; /* Dark gray text */
                     margin: 0;
                 }
@@ -161,7 +160,7 @@ function App() {
                     font-size: 2.25rem; /* text-4xl */
                     font-weight: 700;
                     text-align: center;
-                    margin-bottom: 2rem; /* my-12 */
+                    margin-bottom: 3rem; /* my-12 */
                 }
 
                 /* --- Cards & Sections --- */
@@ -169,7 +168,7 @@ function App() {
                     background-color: #ffffff; /* White cards */
                     border-radius: 0.75rem; /* rounded-lg */
                     padding: 1.5rem; /* p-6 */
-                    margin-bottom: 1.5rem;
+                    margin-bottom: 2rem;
                     border: 1px solid #e5e7eb; /* Light gray border */
                 }
 
@@ -373,80 +372,100 @@ function App() {
 
             <main className="main-content">
                 <h1 className="main-title">Analyze Your Code with AI</h1>
+                <p style={{textAlign: 'center', maxWidth: '600px', margin: '-2rem auto 3rem', color: '#6b7280'}}>
+                    Get instant insights into time & space complexity, optimization suggestions, and curated learning resources for any programming language.
+                </p>
 
-                {/* --- Code Input Section --- */}
-                <section className="content-card">
-                    <div className="card-header">
-                        <h2 className="card-title">Code Input</h2>
-                    </div>
-                    <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-                        <select
-                            value={language}
-                            onChange={(e) => setLanguage(e.target.value)}
-                        >
-                            <option value="javascript">JavaScript</option>
-                            <option value="python">Python</option>
-                            <option value="java">Java</option>
-                            <option value="cpp">C++</option>
-                            <option value="typescript">TypeScript</option>
-                            <option value="csharp">C#</option>
-                            <option value="go">Go</option>
-                            <option value="rust">Rust</option>
-                        </select>
-                        <textarea
-                            placeholder="Paste your code here..."
-                            value={code}
-                            onChange={(e) => setCode(e.target.value)}
-                        ></textarea>
-                        <button
-                            className="analyze-button"
-                            onClick={handleAnalyzeCode}
-                            disabled={loading}
-                        >
-                            {loading ? 'Analyzing...' : 'Analyze with AI'}
-                        </button>
-                    </div>
-                </section>
+                {!showResults ? (
+                    <section className="content-card">
+                        <div className="card-header">
+                            <h2 className="card-title">Code Input</h2>
+                        </div>
+                        <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+                            <label htmlFor="language-select" className="card-title" style={{fontSize: '1rem', fontWeight: '500'}}>Select Language</label>
+                            <select
+                                id="language-select"
+                                value={language}
+                                onChange={(e) => setLanguage(e.target.value)}
+                            >
+                                <option value="javascript">JavaScript</option>
+                                <option value="python">Python</option>
+                                <option value="java">Java</option>
+                                <option value="cpp">C++</option>
+                                <option value="typescript">TypeScript</option>
+                                <option value="csharp">C#</option>
+                                <option value="go">Go</option>
+                                <option value="rust">Rust</option>
+                            </select>
+                            <textarea
+                                placeholder={placeholderText}
+                                value={code}
+                                onChange={(e) => setCode(e.target.value)}
+                            ></textarea>
+                            <button
+                                className="analyze-button"
+                                onClick={handleAnalyzeCode}
+                                disabled={loading}
+                            >
+                                {loading ? 'Analyzing...' : 'Analyze with AI'}
+                            </button>
+                        </div>
+                    </section>
+                ) : (
+                    <>
+                        {loading && <div className="loader" style={{margin: '2rem auto', borderTopColor: '#7c3aed'}}></div>}
+                        
+                        {error && <div style={{color: '#f87171', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '1rem', borderRadius: '0.5rem'}}>{error}</div>}
 
-                {loading && <div className="loader" style={{margin: '2rem auto', borderTopColor: '#7c3aed'}}></div>}
-                
-                {error && <div style={{color: '#f87171', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '1rem', borderRadius: '0.5rem'}}>{error}</div>}
+                        <div style={{display: 'flex', flexDirection: 'column', gap: '2rem'}}>
+                            {/* --- Submitted Code --- */}
+                            <section className="content-card dark-section">
+                                <div className="card-header">
+                                    <h2 className="card-title">Submitted Code</h2>
+                                </div>
+                                <pre className="code-block"><code>{code}</code></pre>
+                            </section>
 
-                <div style={{display: 'flex', flexDirection: 'column', gap: '1.5rem'}}>
-                    {/* --- Unified Analysis Card --- */}
-                    {(results || loading) && (
-                        <section className="content-card">
                             {/* --- Complexity Analysis --- */}
-                            <div className="card-header">
-                                <h2 className="card-title">Complexity Analysis</h2>
-                            </div>
-                            {loading && !results ? <p>Analyzing code... Please wait.</p> : results ? (
-                                <>
+                            <section className="content-card">
+                                <div className="card-header">
+                                    <h2 className="card-title">Complexity Analysis</h2>
+                                </div>
+                                {loading ? <p>Analyzing code... Please wait.</p> : results ? (
+                                    <>
+                                        <div className="complexity-metrics">
+                                            <div className="complexity-item">
+                                                <p style={{fontSize: '0.875rem'}}>Time Complexity</p>
+                                                <p className="complexity-value">{results.time_complexity || '-'}</p>
+                                            </div>
+                                            <div className="complexity-item">
+                                                <p style={{fontSize: '0.875rem'}}>Space Complexity</p>
+                                                <p className="complexity-value">{results.space_complexity || '-'}</p>
+                                            </div>
+                                        </div>
+                                        <p style={{textAlign: 'center', marginTop: '1rem'}}>{results.time_complexity_explanation}</p>
+                                    </>
+                                ) : (
                                     <div className="complexity-metrics">
                                         <div className="complexity-item">
                                             <p style={{fontSize: '0.875rem'}}>Time Complexity</p>
-                                            <p className="complexity-value">{results.time_complexity}</p>
+                                            <p className="complexity-value">-</p>
                                         </div>
                                         <div className="complexity-item">
                                             <p style={{fontSize: '0.875rem'}}>Space Complexity</p>
-                                            <p className="complexity-value">{results.space_complexity}</p>
+                                            <p className="complexity-value">-</p>
                                         </div>
                                     </div>
-                                    <p style={{textAlign: 'center', marginTop: '1rem'}}>{results.time_complexity_explanation}</p>
-                                </>
-                            ) : (
-                                <p>Complexity metrics will be displayed here after analysis.</p>
-                            )}
-
-                            {results && <hr style={{borderTop: '1px solid #e5e7eb', margin: '1.5rem 0'}} />}
+                                )}
+                            </section>
 
                             {/* --- Optimization Suggestions --- */}
-                            {results && (
-                                <>
+                            {(!loading && results) && (
+                                <section className="content-card">
                                     <div className="card-header">
                                         <h2 className="card-title">Optimization Suggestions</h2>
                                     </div>
-                                    {results.optimization_suggestions && results.optimization_suggestions.length > 0 && results.optimization_suggestions[0] !== "No significant optimizations are apparent." ? (
+                                    {results.optimization_suggestions && results.optimization_suggestions.length > 0 ? (
                                         <ul style={{listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
                                             {results.optimization_suggestions.map((suggestion, index) => (
                                                 <li key={index} style={{display: 'flex', alignItems: 'flex-start', gap: '0.75rem'}}>
@@ -457,95 +476,54 @@ function App() {
                                                 </li>
                                             ))}
                                         </ul>
-                                    ) : (
-                                        <p>The code is already optimized.</p>
-                                    )}
-                                </>
+                                    ) : <p>No optimization suggestions provided.</p>}
+                                </section>
                             )}
-                             {loading && !results && (
-                               <p>Optimization suggestions will appear here after analysis.</p>
-                            )}
-                        </section>
-                    )}
 
-                    {/* --- Alternative Implementations --- */}
-                    {alternativeImplementations?.length > 0 && (
-                        <section className="content-card" style={{backgroundColor: '#f3f4f6'}}>
-                            <div className="card-header">
-                                <h2 className="card-title">Alternative Implementations</h2>
-                            </div>
-                            <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-                                {alternativeImplementations.map((alt, index) => (
-                                    <div key={index}>
-                                        <h3 style={{fontWeight: 600, color: '#4f46e5', marginBottom: '0.5rem'}}>{alt.title}</h3>
-                                        <pre className="code-block"><code>{alt.code}</code></pre>
+                            {/* --- Alternative Implementations (Dark) --- */}
+                            {(!loading && results) && (
+                                <section className="content-card dark-section">
+                                    <div className="card-header">
+                                        <h2 className="card-title">Alternative Implementations</h2>
                                     </div>
-                                ))}
-                            </div>
-                        </section>
-                    )}
-
-                    {/* --- Recommended Videos --- */}
-                    {youtubeVideos?.length > 0 && (
-                        <section className="content-card" style={{backgroundColor: '#ffebee'}}>
-                            <div className="card-header">
-                                <h2 className="card-title">Recommended Videos</h2>
-                            </div>
-                            <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-                                {youtubeVideos.map((video, index) => (
-                                    <a key={index} href={video.url} target="_blank" rel="noopener noreferrer" style={{
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        gap: '1rem',
-                                        backgroundColor: '#ffffff',
-                                        padding: '0.75rem',
-                                        borderRadius: '0.5rem',
-                                        textDecoration: 'none',
-                                        transition: 'background-color 0.2s',
-                                        alignItems: 'center'
-                                    }}>
-                                        <img src={video.thumbnail} alt={video.title} style={{
-                                            borderRadius: '0.375rem',
-                                            width: '120px',
-                                            height: '90px',
-                                            objectFit: 'cover',
-                                            flexShrink: 0
-                                        }}/>
-                                        <div style={{display: 'flex', flexDirection: 'column', overflow: 'hidden'}}>
-                                            <h3 className="video-title" style={{
-                                                fontWeight: 600,
-                                                fontSize: '0.875rem',
-                                                margin: 0,
-                                                color: '#1f2937',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis'
-                                            }}>{video.title}</h3>
-                                            <p className="video-channel" style={{
-                                                fontSize: '0.75rem',
-                                                margin: '0.25rem 0 0.5rem 0',
-                                                color: '#6b7280'
-                                            }}>{video.channelTitle}</p>
-                                            <p style={{
-                                                fontSize: '0.875rem',
-                                                color: '#6b7280',
-                                                margin: 0,
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                display: '-webkit-box',
-                                                WebkitLineClamp: 2,
-                                                WebkitBoxOrient: 'vertical'
-                                            }}>{video.description}</p>
+                                    {alternativeImplementations?.length > 0 ? (
+                                        <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+                                            {alternativeImplementations.map((alt, index) => (
+                                                <div key={index}>
+                                                    <h3 style={{fontWeight: 600, color: '#c4b5fd', marginBottom: '0.5rem'}}>{alt.title}</h3>
+                                                    <pre className="code-block"><code>{alt.code}</code></pre>
+                                                </div>
+                                            ))}
                                         </div>
-                                    </a>
-                                ))}
-                            </div>
-                        </section>
-                    )}
-                </div>
+                                    ) : <p>No alternative implementations were provided.</p>}
+                                </section>
+                            )}
+
+                            {/* --- Recommended Videos (Dark) --- */}
+                            {(!loading && results) && (
+                                <section className="content-card dark-section">
+                                    <div className="card-header">
+                                        <h2 className="card-title">Recommended Videos</h2>
+                                    </div>
+                                    {youtubeVideos?.length > 0 ? (
+                                        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem'}}>
+                                            {youtubeVideos.map((video, index) => (
+                                                <a key={index} href={video.url} target="_blank" rel="noopener noreferrer" style={{display: 'block', backgroundColor: '#282828', padding: '0.75rem', borderRadius: '0.5rem', textDecoration: 'none', transition: 'background-color 0.2s'}}>
+                                                    <img src={video.thumbnail} alt={video.title} style={{borderRadius: '0.375rem', marginBottom: '0.5rem', width: '100%', aspectRatio: '16/9', objectFit: 'cover'}}/>
+                                                    <h3 className="video-title" style={{fontWeight: 600, fontSize: '0.875rem'}}>{video.title}</h3>
+                                                    <p className="video-channel" style={{fontSize: '0.75rem'}}>{video.channelTitle}</p>
+                                                </a>
+                                            ))}
+                                        </div>
+                                    ) : <p>No relevant videos were found.</p>}
+                                </section>
+                            )}
+                        </div>
+                    </>
+                )}
             </main>
 
-            <footer className="app-footer" style={{marginTop: '0'}}>
+            <footer className="app-footer">
                 <div className="footer-grid">
                     <div className="feature-block">
                         <span className="feature-icon">⚡</span>
@@ -569,4 +547,3 @@ function App() {
 }
 
 export default App;
-//babu come to start ha
