@@ -1,4 +1,55 @@
 require('dotenv').config();
+
+const fs = require('fs');
+const path = require('path');
+
+// --- Start of Diagnostic Code ---
+try {
+    const currentDirectory = process.cwd();
+    console.log(`Current working directory: ${currentDirectory}`);
+    console.log('--- Files in current directory: ---');
+    fs.readdirSync(currentDirectory).forEach(file => {
+        console.log(file);
+    });
+    console.log('------------------------------------');
+
+    // Check if node_modules exists
+    const nodeModulesPath = path.join(currentDirectory, 'node_modules');
+    if (fs.existsSync(nodeModulesPath)) {
+        console.log('--- Files in node_modules (looking for dotenv): ---');
+        fs.readdirSync(nodeModulesPath).forEach(file => {
+            if (file.startsWith('dotenv')) {
+                 console.log(file);
+            }
+        });
+        console.log('------------------------------------');
+    } else {
+        console.log('node_modules directory NOT FOUND in current directory.');
+    }
+    
+    const backendDirectory = path.resolve(currentDirectory);
+    const parentDirectory = path.resolve(currentDirectory, '..');
+
+    console.log(`Backend directory resolved to: ${backendDirectory}`);
+    console.log('--- Files in backend directory: ---');
+    fs.readdirSync(backendDirectory).forEach(file => {
+        console.log(file);
+    });
+    console.log('------------------------------------');
+
+    console.log(`Parent directory resolved to: ${parentDirectory}`);
+    console.log('--- Files in parent directory: ---');
+    fs.readdirSync(parentDirectory).forEach(file => {
+        console.log(file);
+    });
+    console.log('------------------------------------');
+
+
+} catch (e) {
+    console.error('Error during diagnostic logging:', e);
+}
+// --- End of Diagnostic Code ---
+
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch'); // For making HTTP requests
