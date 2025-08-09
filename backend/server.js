@@ -6,7 +6,7 @@ const path = require('path');
 const { rmSync } = require('fs');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // --- API Keys are now loaded from .env file ---
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -79,7 +79,10 @@ ${code}
             }
         };
 
-        const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        console.log('Attempting to fetch from URL:', geminiApiUrl);
+
+        const geminiResponse = await fetch(geminiApiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(geminiPayload)
@@ -139,7 +142,8 @@ ${code}
                 title: item.snippet.title,
                 channelTitle: item.snippet.channelTitle,
                 thumbnail: item.snippet.thumbnails.high.url, // Or default/medium
-                url: `https://www.youtube.com/watch?v=${item.id.videoId}`
+                url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                description: item.snippet.description
             }));
             console.log('YouTube Videos:', youtubeVideos);
         }
